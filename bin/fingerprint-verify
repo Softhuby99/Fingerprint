@@ -1,0 +1,31 @@
+#!/bin/bash
+source /home/sku/fingerprint/config.sh
+
+# PAM_USER fallback
+if [ -z "$PAM_USER" ]; then
+    PAM_USER="$SUDO_USER"
+fi
+if [ -z "$PAM_USER" ]; then
+    PAM_USER=$(logname 2>/dev/null || echo "")
+fi
+
+echo "=== $(date) === User=$PAM_USER" >> "$FP_LOG"
+
+[ "$PAM_USER" != "sku" ] && exit 1
+
+for attempt in 1 2 3; do
+    echo "--- Versuch $attempt ---" >> "$FP_LOG"
+    /usr/bin/python3 "$FP_BIN/verify_nbis.py" "$PAM_USER" >> "$FP_LOG" 2>&1
+    RC=$?
+    echo "RC=$RC" >> "$FP_LOG"
+    if [ $RC -eq 0 ]; then
+        SECRET=$(openssl enc -d -aes-256-cbc -pbkdf2 \
+            -pass pass:fingerprint-key \
+            -in /home/sku/fingerprint/.keyring_secret 2>/dev/null)
+        echo "$SECRET" | /usr/bin/gnome-keyring-daemon --unlock >> "$FP_LOG" 2>&1
+        exit 0
+    fi
+    sleep 0.5
+done
+
+exit 1

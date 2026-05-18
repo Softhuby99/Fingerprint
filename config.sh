@@ -1,0 +1,10 @@
+#!/bin/bash
+export FP_ROOT="/home/sku/fingerprint"
+export FP_BIN="$FP_ROOT/bin"
+export FP_LIB="$FP_ROOT/lib"
+export FP_TOOLS="$FP_ROOT/tools"
+export FP_TEMPLATES="$FP_ROOT/templates"
+export FP_LOG="$FP_ROOT/logs/fingerprint-auth.log"
+export FP_TMP="$FP_ROOT/tmp"
+export PATH="$FP_TOOLS:$FP_BIN:$PATH"
+export LD_LIBRARY_PATH="$FP_LIB:$LD_LIBRARY_PATH"

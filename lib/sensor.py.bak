@@ -1,0 +1,27 @@
+import ctypes, numpy as np
+
+class FTRSCAN_IMAGE_SIZE(ctypes.Structure):
+    _fields_ = [("nWidth", ctypes.c_int), ("nHeight", ctypes.c_int), ("nImageSize", ctypes.c_int)]
+
+LIB = ctypes.CDLL("/home/sku/fingerprint/lib/libScanAPI.so")
+
+def open_scanner():
+    LIB.ftrScanOpenDevice.restype = ctypes.c_void_p
+    h = LIB.ftrScanOpenDevice()
+    if not h:
+        raise RuntimeError("Scanner nicht gefunden!")
+    return h
+
+def get_size(handle):
+    s = FTRSCAN_IMAGE_SIZE()
+    LIB.ftrScanGetImageSize(handle, ctypes.byref(s))
+    return s.nWidth, s.nHeight, s.nImageSize
+
+def capture(handle, w, h, size):
+    buf = (ctypes.c_ubyte * size)()
+    if not LIB.ftrScanGetFrame(handle, buf, None):
+        return None
+    return np.frombuffer(buf, dtype=np.uint8).reshape((h, w))
+
+def is_finger_on(img):
+    return img.std() > 15

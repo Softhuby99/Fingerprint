@@ -1,0 +1,5 @@
+{
+  "threshold": 35,
+  "num_scans": 5,
+  "min_minutiae": 5
+}
